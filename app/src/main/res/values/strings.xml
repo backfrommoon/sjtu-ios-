@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">autocharge</string>
+    <string name="title_activity_charger">ChargerActivity</string>
+    <string name="accessibility_service_description">自动点击校园生活的智能充电按钮</string>
+</resources>
