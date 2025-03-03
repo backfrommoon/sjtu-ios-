@@ -20,6 +20,21 @@ class ChargerAccessibilityService : AccessibilityService() {
                 // 点击智能充电
                 clickButtonByText_parent(rootNode, "智能充电")
 
+//                // 点击扫码充电
+//                clickButtonById(rootNode, "com.dses.campuslife:id/button_charge_list")
+//
+//                // 点击输入框
+//                clickButtonByText(rootNode, "输入")
+//
+//                // 输入设备号
+//                val deviceNumber = getDeviceNumber() // 从 SharedPreferences 获取设备号
+//                enterTextInField(rootNode, "com.dses.campuslife:id/dialog_input_input", deviceNumber)
+                // 点击确定
+                //clickButtonByText(rootNode, "确定")
+            }, 5000) // 延迟5秒，确保App已经完全加载
+            Handler(Looper.getMainLooper()).postDelayed({
+                val rootNode = rootInActiveWindow ?: return@postDelayed
+
                 // 点击扫码充电
                 clickButtonById(rootNode, "com.dses.campuslife:id/button_charge_list")
 
@@ -28,11 +43,20 @@ class ChargerAccessibilityService : AccessibilityService() {
 
                 // 输入设备号
                 val deviceNumber = getDeviceNumber() // 从 SharedPreferences 获取设备号
-                //enterTextInField(rootNode, "com.dses.campuslife:id/input_device", deviceNumber)
-                enterTextInField(rootNode, "com.dses.campuslife:id/dialog_input_input", "17054424")
+                enterTextInField(rootNode, "com.dses.campuslife:id/dialog_input_input", deviceNumber)
                 // 点击确定
                 //clickButtonByText(rootNode, "确定")
-            }, 5000) // 延迟5秒，确保App已经完全加载
+            }, 1000)
+            Handler(Looper.getMainLooper()).postDelayed({
+                val rootNode = rootInActiveWindow ?: return@postDelayed
+
+                // 输入设备号
+                val deviceNumber = getDeviceNumber() // 从 SharedPreferences 获取设备号
+                enterTextInField(rootNode, "com.dses.campuslife:id/dialog_input_input", deviceNumber)
+                // 点击确定
+                //clickButtonByText(rootNode, "确定")
+            }, 2000) // 延迟5秒，确保App已经完全加载
+
         }
     }
 
@@ -59,7 +83,7 @@ class ChargerAccessibilityService : AccessibilityService() {
                 Handler(Looper.getMainLooper()).postDelayed({
                     clickButtonByText(rootNode, "确定")
                     Log.d("ChargerAccessibility", "延迟 3 秒后点击‘确定’按钮")
-                }, 3000) // 延迟 3 秒
+                }, 1000) // 延迟 3 秒
             }
         }
     }
