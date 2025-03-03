@@ -28,8 +28,8 @@ class ChargerAccessibilityService : AccessibilityService() {
 
                 // 输入设备号
                 val deviceNumber = getDeviceNumber() // 从 SharedPreferences 获取设备号
-                enterTextInField(rootNode, "com.dses.campuslife:id/input_device", deviceNumber)
-
+                //enterTextInField(rootNode, "com.dses.campuslife:id/input_device", deviceNumber)
+                enterTextInField(rootNode, "com.dses.campuslife:id/dialog_input_input", "17054424")
                 // 点击确定
                 //clickButtonByText(rootNode, "确定")
             }, 5000) // 延迟5秒，确保App已经完全加载
@@ -42,17 +42,36 @@ class ChargerAccessibilityService : AccessibilityService() {
     }
 
     private fun enterTextInField(rootNode: AccessibilityNodeInfo, id: String, text: String) {
+        Log.d("ChargerAccessibility", "Attempting to find input field with ID: $id")
         val nodes = rootNode.findAccessibilityNodeInfosByViewId(id)
-        for (node in nodes) {
-            val args = Bundle()
-            args.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
-            node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+        if (nodes.isEmpty()) {
+            Log.d("ChargerAccessibility", "No input field found with ID: $id")
+        } else {
+            Log.d("ChargerAccessibility", "Input field found, attempting to enter text: $text")
+            for (node in nodes) {
+                // 直接设置文本
+                val args = Bundle()
+                args.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
+                node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                Log.d("ChargerAccessibility", "输入文本: $text")
 
-            // 在输入设备号时显示 Toast
-            Toast.makeText(applicationContext, "正在输入：$text", Toast.LENGTH_SHORT).show()
-            Log.d("ChargerAccessibility", "输入设备号: $text")
+                // 延迟 3 秒后点击确定按钮
+                Handler(Looper.getMainLooper()).postDelayed({
+                    clickButtonByText(rootNode, "确定")
+                    Log.d("ChargerAccessibility", "延迟 3 秒后点击‘确定’按钮")
+                }, 3000) // 延迟 3 秒
+            }
         }
     }
+
+    // 模拟按键输入
+    private fun performKeyPress(node: AccessibilityNodeInfo, char: Char) {
+        val args = Bundle()
+        args.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, char.toString())
+        node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+    }
+
+
 
     private fun clickButtonByText(rootNode: AccessibilityNodeInfo, text: String) {
         val nodes = rootNode.findAccessibilityNodeInfosByText(text)
