@@ -58,6 +58,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.nanohttpd)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")// 使用最新版本
     implementation("androidx.work:work-runtime-ktx:2.7.1")
+
 
 }
