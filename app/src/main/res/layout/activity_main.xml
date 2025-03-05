@@ -5,12 +5,42 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- 密码显示 -->
+    <TextView
+        android:id="@+id/passwordTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Password: Not Set"
+        android:textSize="18sp"
+        android:textColor="@android:color/black" />
+    <!-- 输入密码 -->
+
+    <!-- 修改密码按钮 -->
+    <Button
+        android:id="@+id/changePasswordButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Password"
+        android:layout_marginTop="16dp" />
+
+    <!-- 日志显示 -->
+    <!-- 作者的话 -->
+
     <TextView
         android:id="@+id/logTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="
-        "
+        android:layout_marginTop="16dp"
+        android:text="Logs："
+        android:textSize="16sp" />
 
+    <TextView
+        android:id="@+id/authorsaying"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="使用方法：一台android设备安装此app后保持联网状态且app在后台运行，ios用户在浏览器中输入http://47.97.50.103:26521/?number=12345617050110后发送，其中123456换成你app顶端你自己的密码，17050110换成充电桩的后八位，47.97.50.103是服务器的ip地址，这个服务器自2025年三月起只租用了3个月，后续可能会更换，如果用的朋友多的话会通知大家的。
+    有任何问题可以发送邮件到jianxichao666@sjtu.edu.cn,祝大家生活愉快！"
+        android:textIsSelectable="true"
         android:textSize="16sp" />
 </LinearLayout>
