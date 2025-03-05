@@ -1,7 +1,10 @@
 package com.example.autocharge
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -11,7 +14,6 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 import android.widget.EditText
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,6 +41,9 @@ class MainActivity : AppCompatActivity() {
         changePasswordButton.setOnClickListener {
             showPasswordInputDialog()
         }
+
+        // 检查无障碍权限
+        checkAccessibilityPermission()
 
         // 启动 WebSocket 客户端
         startWebSocketClient()
@@ -102,6 +107,28 @@ class MainActivity : AppCompatActivity() {
         webSocketClient = MyWebSocketClient(this)
         val serverUrl = "ws://47.97.50.103:26521/orderResult"
         webSocketClient.connect(serverUrl)
+    }
+
+    private fun checkAccessibilityPermission() {
+        if (!isAccessibilityServiceEnabled(this, ChargerAccessibilityService::class.java)) {
+            Toast.makeText(this, "请开启无障碍服务以自动点击‘智能充电’按钮", Toast.LENGTH_LONG).show()
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            startActivity(intent)
+        }
+    }
+
+    private fun isAccessibilityServiceEnabled(context: Context, service: Class<out android.accessibilityservice.AccessibilityService>): Boolean {
+        val accessibilityManager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager
+        val enabledServices = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+        if (enabledServices != null) {
+            val colonSplitter = enabledServices.split(':')
+            for (serviceName in colonSplitter) {
+                if (serviceName.contains(service.name)) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     fun log(message: String) {

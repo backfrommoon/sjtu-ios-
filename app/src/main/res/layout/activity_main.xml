@@ -39,8 +39,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="使用方法：一台android设备安装此app后保持联网状态且app在后台运行，ios用户在浏览器中输入http://47.97.50.103:26521/?number=12345617050110后发送，其中123456换成你app顶端你自己的密码，17050110换成充电桩的后八位，47.97.50.103是服务器的ip地址，这个服务器自2025年三月起只租用了3个月，后续可能会更换，如果用的朋友多的话会通知大家的。
-    有任何问题可以发送邮件到jianxichao666@sjtu.edu.cn,祝大家生活愉快！"
+        android:text="使用方法：一台android设备安装此app后保持联网状态且app在后台运行，ios用户在浏览器中输入http://47.97.50.103:26521/?number=12345617050110后发送，其中123456换成app顶端的密码，17050110换成充电桩的后八位，47.97.50.103是服务器的ip地址，这个服务器自2025年三月起只租用了3个月，后续可能会更换，如果用的朋友多的话会通知大家的。
+    有任何问题可以发送邮件到jianxichao666@sjtu.edu.cn,祝大家生活愉快！
+另外：这款软件需要系统的无障碍权限，如果检测到无此权限会跳转到赋权界面，有的手机每次启动app都要重新赋权，所以建议一般不要在后台
+关闭该软件。但是当正常使用校园生活时，请关闭此软件。"
         android:textIsSelectable="true"
         android:textSize="16sp" />
 </LinearLayout>
