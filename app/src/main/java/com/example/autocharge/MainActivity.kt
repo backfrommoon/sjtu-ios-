@@ -6,8 +6,11 @@ import android.os.Bundle
 import android.text.format.Formatter
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import java.io.IOException
 import java.net.ServerSocket
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,6 +25,17 @@ class MainActivity : AppCompatActivity() {
 
         // 启动HTTP服务器
         startHttpServer()
+        // 设置定时任务
+        setupPeriodicWork()
+    }
+
+    private fun setupPeriodicWork() {
+        val workRequest = PeriodicWorkRequest.Builder(
+            AppCheckWorker::class.java,
+            30, TimeUnit.MINUTES
+        ).build()
+
+        WorkManager.getInstance(this).enqueue(workRequest)
     }
 
     private fun startHttpServer() {

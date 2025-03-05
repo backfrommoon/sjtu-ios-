@@ -9,7 +9,7 @@
         android:id="@+id/logTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Logs will appear here:
+        android:text="
         "
 
         android:textSize="16sp" />

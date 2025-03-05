@@ -1,40 +1,48 @@
 package com.example.autocharge
+
+
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
+import android.os.PowerManager
 import fi.iki.elonen.NanoHTTPD
-import kotlinx.coroutines.*
-
 
 class MyHttpServer(port: Int, private val context: Context) : NanoHTTPD(port) {
-    private fun delay_5scds() {
-        GlobalScope.launch {
-            println("开始...")
-            delay(5000) // 延迟 5 秒
-            println("5 秒后执行")
-        }
-    }
+
     override fun serve(session: IHTTPSession): Response {
-        // 获取请求参数
         val number = session.parms["number"]
 
         if (number != null) {
-            // 记录日志
             (context as MainActivity).log("Received number: $number")
-            //delay_5scds()
+
+            // 检测屏幕状态并唤醒屏幕
+            wakeUpDevice()
+
             // 打开充电App并传递号码
             openChargerApp(number)
 
-            // 返回响应
             return newFixedLengthResponse("Number received: $number")
         }
 
         return newFixedLengthResponse("No number received")
     }
 
+    private fun wakeUpDevice() {
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val wakeLock = powerManager.newWakeLock(
+            PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            "MyApp::WakeLockTag"
+        )
+        wakeLock.acquire(5000) // 保持唤醒5秒
+
+        val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val keyguardLock = keyguardManager.newKeyguardLock("MyApp::KeyguardLock")
+        keyguardLock.disableKeyguard() // 解锁屏幕
+    }
+
     private fun openChargerApp(number: String) {
-        // 打开充电App（假设包名为com.example.charger）
         val intent = Intent(context, ChargerActivity::class.java)
-        intent.putExtra("number", number) // 传递号码
+        intent.putExtra("number", number)
         context.startActivity(intent)
     }
 }
