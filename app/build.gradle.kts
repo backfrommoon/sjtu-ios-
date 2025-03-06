@@ -17,7 +17,14 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    signingConfigs {
+        create("release") {
+            storeFile = file("jxc-key.jks")
+            storePassword = "zhejiushimima1"
+            keyAlias = "autocharge_signed"
+            keyPassword = "zhejiushimima1"
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -25,6 +32,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release") // 确保启用签名配置
+
         }
     }
     compileOptions {

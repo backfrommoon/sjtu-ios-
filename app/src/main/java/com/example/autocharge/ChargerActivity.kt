@@ -2,6 +2,8 @@ package com.example.autocharge
 
 import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -46,13 +48,23 @@ class ChargerActivity : AppCompatActivity() {
         if (!isAccessibilityServiceEnabled(this, ChargerAccessibilityService::class.java)) {
             startAccessibilityService()
         } else {
-            val intent = packageManager.getLaunchIntentForPackage("com.dses.campuslife")
+            val intent0 = packageManager.getLaunchIntentForPackage("com.dses.campuslife")
+            val intent = Intent()
+            intent.setComponent(ComponentName("com.dses.campuslife", "com.dses.campuslife.activity.MainActivity"))
+            if (intent0 != null) {
+                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent0)
+            }
             if (intent != null) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
-            } else {
+            }
+            else {
                 Toast.makeText(this, "校园生活 App 未安装", Toast.LENGTH_SHORT).show()
             }
+            // 创建 Intent 来启动特定的活动
+
+
         }
     }
 
