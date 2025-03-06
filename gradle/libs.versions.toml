@@ -10,6 +10,7 @@ activityCompose = "1.10.0"
 composeBom = "2024.04.01"
 nanohttpd = "2.3.1"
 appcompat = "1.7.0"
+media3CommonKtx = "1.5.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -28,6 +29,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 # 搭建服务器引进的包
 nanohttpd = { module = "org.nanohttpd:nanohttpd", version.ref = "nanohttpd" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-ktx", version.ref = "media3CommonKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

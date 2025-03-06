@@ -10,10 +10,12 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
+import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+
 
 class ChargerActivity : AppCompatActivity() {
 
@@ -44,27 +46,51 @@ class ChargerActivity : AppCompatActivity() {
         }
     }
 
-    fun startcampuslife(){
+    fun startcampuslife() {
         if (!isAccessibilityServiceEnabled(this, ChargerAccessibilityService::class.java)) {
             startAccessibilityService()
         } else {
+            var isAppLaunched = false // 标记应用是否成功启动
+
+            // 尝试通过包名启动应用
             val intent0 = packageManager.getLaunchIntentForPackage("com.dses.campuslife")
-            val intent = Intent()
-            intent.setComponent(ComponentName("com.dses.campuslife", "com.dses.campuslife.activity.MainActivity"))
             if (intent0 != null) {
-                intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent0)
+                try {
+                    intent0.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(intent0)
+                    isAppLaunched = true // 标记为成功启动
+                } catch (e: Exception) {
+                    Log.e("CampusLife", "Failed to launch app via package name", e)
+                }
             }
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-            }
-            else {
-                Toast.makeText(this, "校园生活 App 未安装", Toast.LENGTH_SHORT).show()
-            }
-            // 创建 Intent 来启动特定的活动
 
+            // 如果通过包名启动失败，尝试通过指定 Activity 启动
+            if (!isAppLaunched) {
+                val intent = Intent()
+                intent.component = ComponentName("com.dses.campuslife", "com.dses.campuslife.activity.MainActivity")
+                try {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(intent)
+                    isAppLaunched = true // 标记为成功启动
+                } catch (e: Exception) {
+                    Log.e("CampusLife", "Failed to launch app via specific activity", e)
+                }
+            }
 
+            // 如果前两种方式都失败，尝试通过 adb shell monkey 启动
+            if (!isAppLaunched) {
+                try {
+                    Runtime.getRuntime().exec("adb shell monkey -p com.dses.campuslife 1")
+                    isAppLaunched = true // 标记为成功启动
+                } catch (e: Exception) {
+                    Log.e("CampusLife", "Failed to launch app via adb shell monkey", e)
+                }
+            }
+
+            // 如果所有方式都失败，显示 Toast 提示
+            if (!isAppLaunched) {
+                Toast.makeText(this, "校园生活 App 未安装或启动失败", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
