@@ -125,7 +125,7 @@ class MyWebSocketClient(private val context: Context) {
         Log.d("WebSocket", "Attempting to reconnect...")
         (context as MainActivity).log("Attempting to reconnect... [${getCurrentTimestamp()}]")
         close() // 关闭现有连接
-        connect("wss://your.websocket.url") // 重新连接，替换为你的 WebSocket URL
+        connect("ws://47.97.50.103:26521/orderResult") // 重新连接，替换为你的 WebSocket URL
     }
 
     private fun wakeUpDevice() {
