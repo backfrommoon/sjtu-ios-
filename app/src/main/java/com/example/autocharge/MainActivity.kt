@@ -1,9 +1,14 @@
 package com.example.autocharge
 
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
@@ -14,6 +19,10 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 import android.widget.EditText
+import androidx.annotation.RequiresApi
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,6 +35,32 @@ class MainActivity : AppCompatActivity() {
         getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
     }
 
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            startWebSocketClient()
+        }
+    }
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var runCount = 0 // 计数器，记录运行次数
+
+    // 定时任务
+    private val runnable = object : Runnable {
+        override fun run() {
+            startWebSocketClient()
+            runCount++
+
+            // 每运行三次，清理日志
+            if (runCount % 3 == 0) {
+                clearLog()
+            }
+
+            // 每隔十秒钟再次运行
+            handler.postDelayed(this, 10000)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -42,6 +77,9 @@ class MainActivity : AppCompatActivity() {
             showPasswordInputDialog()
         }
 
+        // 注册 BroadcastReceiver
+        registerReceiver(receiver, IntentFilter("com.example.autocharge.START_WEBSOCKET"), Context.RECEIVER_EXPORTED)
+
         // 检查无障碍权限
         checkAccessibilityPermission()
 
@@ -50,6 +88,9 @@ class MainActivity : AppCompatActivity() {
 
         // 设置定时任务（如果需要）
         setupPeriodicWork()
+
+        // 启动定时任务
+        startPeriodicTask()
     }
 
     private fun checkAndDisplayPassword() {
@@ -103,10 +144,11 @@ class MainActivity : AppCompatActivity() {
         WorkManager.getInstance(this).enqueue(workRequest)
     }
 
-    private fun startWebSocketClient() {
+    fun startWebSocketClient() {
         webSocketClient = MyWebSocketClient(this)
         val serverUrl = "ws://47.97.50.103:26521/orderResult"
         webSocketClient.connect(serverUrl)
+        //log("WebSocketClient started at ${getCurrentTimestamp()}")
     }
 
     private fun checkAccessibilityPermission() {
@@ -131,14 +173,44 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    fun log(message: String) {
+    public fun log(message: String) {
         runOnUiThread {
             logTextView.append("$message\n")
         }
     }
 
+    // 清理日志
+    // 清理日志（只清除特定的日志）
+    private fun clearLog() {
+        runOnUiThread {
+            val currentLog = logTextView.text.toString()
+            val logLines = currentLog.split("\n") // 将日志按行拆分
+
+            // 过滤掉包含 "WebSocket opened" 的行
+            val filteredLog = logLines.filter { !it.contains("WebSocket connected") }
+
+            // 将过滤后的日志重新拼接并显示
+            logTextView.text = filteredLog.joinToString("\n")
+        }
+    }
+
+    // 获取当前时间戳
+    private fun getCurrentTimestamp(): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return dateFormat.format(Date())
+    }
+
+    // 启动定时任务
+    private fun startPeriodicTask() {
+        handler.postDelayed(runnable, 10000) // 10秒后开始执行
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         webSocketClient.close()
+        // 注销 BroadcastReceiver
+        unregisterReceiver(receiver)
+        // 停止定时任务
+        handler.removeCallbacks(runnable)
     }
 }

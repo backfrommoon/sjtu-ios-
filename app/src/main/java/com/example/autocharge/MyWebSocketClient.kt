@@ -51,7 +51,7 @@ class MyWebSocketClient(private val context: Context) {
     private inner class EchoWebSocketListener : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
             Log.d("WebSocket", "Connected to server")
-            (context as MainActivity).log("WebSocket opened")
+            (context as MainActivity).log("WebSocket connected[${getCurrentTimestamp()}]")
             lastPingTime = System.currentTimeMillis() // 连接成功后记录时间
         }
 
