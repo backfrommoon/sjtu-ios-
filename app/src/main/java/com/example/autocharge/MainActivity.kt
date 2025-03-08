@@ -68,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         passwordTextView = findViewById(R.id.passwordTextView)
         logTextView = findViewById(R.id.logTextView)
         changePasswordButton = findViewById(R.id.changePasswordButton)
+        webSocketClient = MyWebSocketClient(this)
 
         // 检查并显示密码
         checkAndDisplayPassword()
@@ -145,7 +146,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startWebSocketClient() {
-        webSocketClient = MyWebSocketClient(this)
+
         val serverUrl = "ws://47.97.50.103:26521/orderResult"
         webSocketClient.connect(serverUrl)
         //log("WebSocketClient started at ${getCurrentTimestamp()}")
