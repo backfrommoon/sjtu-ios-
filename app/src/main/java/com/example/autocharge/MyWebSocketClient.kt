@@ -26,21 +26,7 @@ class MyWebSocketClient(private val context: Context) {
     private val pingCheckInterval = 2 * 60 * 1000L // 2分钟
     private val handler = Handler(Looper.getMainLooper())
 
-    // 添加启动前台服务的方法
-    private fun startForegroundService() {
-        val serviceIntent = Intent(context, WebSocketForegroundService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(serviceIntent)
-        } else {
-            context.startService(serviceIntent)
-        }
-    }
 
-    // 添加停止前台服务的方法
-    private fun stopForegroundService() {
-        val serviceIntent = Intent(context, WebSocketForegroundService::class.java)
-        context.stopService(serviceIntent)
-    }
     private val pingCheckRunnable = object : Runnable {
         override fun run() {
             checkConnection()
@@ -53,11 +39,11 @@ class MyWebSocketClient(private val context: Context) {
     }
 
     fun connect(url: String) {
-        startForegroundService() // 启动前台服务
+
         val request = Request.Builder()
             .url(url)
             .build()
-
+        Log.d("tryconnect","tryconnect at [${getCurrentTimestamp()}]")
         val listener = EchoWebSocketListener()
         webSocket = client.newWebSocket(request, listener)
         handler.post(pingCheckRunnable) // 启动定时检查
@@ -69,9 +55,9 @@ class MyWebSocketClient(private val context: Context) {
 
     // 在 close 方法中停止前台服务
     fun close() {
-        webSocket?.close(1000, "Goodbye!")
+        webSocket?.close(1000, "刷新websocket连接")
         handler.removeCallbacks(pingCheckRunnable)
-        stopForegroundService() // 停止前台服务
+
     }
 
     private inner class EchoWebSocketListener : WebSocketListener() {
@@ -116,7 +102,9 @@ class MyWebSocketClient(private val context: Context) {
             }
 
             // 所有条件满足，执行操作
-            (context as MainActivity).log("有人输入了你的密码想要充电 [${getCurrentTimestamp()}]")
+            //startForegroundService() // 启动前台服务
+            //Toast.makeText(context, "收到请求，即将进行充电操作", Toast.LENGTH_SHORT).show()
+            (context as MainActivity).log("有人输入了你的密码想要充电 ，充电桩序列是：$data [${getCurrentTimestamp()}]")
             wakeUpDevice()
             openChargerApp(data)
         }
@@ -218,7 +206,7 @@ class WebSocketForegroundService : Service() {
     private fun createNotification(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("WebSocket Service")
-            .setContentText("WebSocket connection is active")
+            .setContentText("检测到autocharge没有无障碍权限！！！")
             .setSmallIcon(R.drawable.ic_notification) // 通知图标
             .build()
     }

@@ -83,7 +83,7 @@ class ChargerAccessibilityService : AccessibilityService() {
                 Handler(Looper.getMainLooper()).postDelayed({
                     clickButtonByText(rootNode, "确定")
                     Log.d("ChargerAccessibility", "延迟 3 秒后点击‘确定’按钮")
-                }, 1000) // 延迟 3 秒
+                }, 1000) // 延迟 1 秒
             }
         }
     }

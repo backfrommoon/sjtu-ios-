@@ -1,15 +1,19 @@
 package com.example.autocharge
 
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -49,16 +53,21 @@ class MainActivity : AppCompatActivity() {
         override fun run() {
             //startWebSocketClient()
             //执行让程序不被杀死的操作
+            // 释放先前的 WebSocket 连接
+            webSocketClient.close()
 
+            // 启动新的 WebSocket 连接
+            startWebSocketClient()
+            checkAccessibilityPermission()
             runCount++
 
-            // 每运行三次，清理日志
-            if (runCount % 3 == 0) {
+            // 每运行6次，清理日志
+            if (runCount % 6 == 0) {
                 clearLog()
             }
-
-            // 每隔十秒钟再次运行
-            handler.postDelayed(this, 10000)
+            Log.d("Handler","handler[${getCurrentTimestamp()}]")
+            // 每隔5min再次运行
+            handler.postDelayed(this, 1000*60*5)
         }
     }
 
@@ -94,6 +103,9 @@ class MainActivity : AppCompatActivity() {
 
         // 启动定时任务
         startPeriodicTask()
+
+        // 检查并请求禁用电池优化
+        //checkAndDisableBatteryOptimization()
     }
 
     private fun checkAndDisplayPassword() {
@@ -153,10 +165,25 @@ class MainActivity : AppCompatActivity() {
         webSocketClient.connect(serverUrl)
         //log("WebSocketClient started at ${getCurrentTimestamp()}")
     }
+    // 添加启动前台服务的方法
+    private fun startForegroundService() {
+        val serviceIntent = Intent(this, WebSocketForegroundService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.startForegroundService(serviceIntent)
+        } else {
+            this.startService(serviceIntent)
+        }
+    }
 
+    // 添加停止前台服务的方法
+    private fun stopForegroundService() {
+        val serviceIntent = Intent(this, WebSocketForegroundService::class.java)
+        this.stopService(serviceIntent)
+    }
     private fun checkAccessibilityPermission() {
         if (!isAccessibilityServiceEnabled(this, ChargerAccessibilityService::class.java)) {
             Toast.makeText(this, "请开启无障碍服务以自动点击‘智能充电’按钮", Toast.LENGTH_LONG).show()
+            startForegroundService() // 启动前台服务
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             startActivity(intent)
         }
@@ -189,13 +216,15 @@ class MainActivity : AppCompatActivity() {
             val currentLog = logTextView.text.toString()
             val logLines = currentLog.split("\n") // 将日志按行拆分
 
-            // 过滤掉包含 "WebSocket opened" 的行
-            val filteredLog = logLines.filter { !it.contains("WebSocket connected") }
+            // 保留最后五条日志，并过滤掉包含 "WebSocket connected" 的行
+            val filteredLog = logLines
+                .takeLast(5) // 保留最后五条日志
 
             // 将过滤后的日志重新拼接并显示
             logTextView.text = filteredLog.joinToString("\n")
         }
     }
+
 
     // 获取当前时间戳
     private fun getCurrentTimestamp(): String {
@@ -205,10 +234,22 @@ class MainActivity : AppCompatActivity() {
 
     // 启动定时任务
     private fun startPeriodicTask() {
-        handler.postDelayed(runnable, 10000) // 10秒后开始执行
+        handler.postDelayed(runnable, 1000*60*5) // 10秒后开始执行
     }
 
+    @SuppressLint("ServiceCast")
+    private fun checkAndDisableBatteryOptimization() {
+        val packageName = packageName
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
 
+        // 检查是否已禁用电池优化
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            // 请求用户禁用电池优化
+            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            intent.data = Uri.parse("package:$packageName")
+            startActivity(intent)
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
