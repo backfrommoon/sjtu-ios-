@@ -47,7 +47,9 @@ class MainActivity : AppCompatActivity() {
     // 定时任务
     private val runnable = object : Runnable {
         override fun run() {
-            startWebSocketClient()
+            //startWebSocketClient()
+            //执行让程序不被杀死的操作
+
             runCount++
 
             // 每运行三次，清理日志
@@ -206,8 +208,11 @@ class MainActivity : AppCompatActivity() {
         handler.postDelayed(runnable, 10000) // 10秒后开始执行
     }
 
+
+
     override fun onDestroy() {
         super.onDestroy()
+        // 关闭 WebSocket 连接并停止前台服务
         webSocketClient.close()
         // 注销 BroadcastReceiver
         unregisterReceiver(receiver)
@@ -215,3 +220,6 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(runnable)
     }
 }
+
+
+

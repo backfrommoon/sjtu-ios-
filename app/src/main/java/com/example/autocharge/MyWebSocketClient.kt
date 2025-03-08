@@ -10,6 +10,13 @@ import android.util.Log
 import okhttp3.*
 import java.text.SimpleDateFormat
 import java.util.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.os.Build
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
 
 class MyWebSocketClient(private val context: Context) {
 
@@ -18,6 +25,22 @@ class MyWebSocketClient(private val context: Context) {
     private var lastPingTime: Long = 0 // 记录最后一次收到 "ping" 的时间
     private val pingCheckInterval = 2 * 60 * 1000L // 2分钟
     private val handler = Handler(Looper.getMainLooper())
+
+    // 添加启动前台服务的方法
+    private fun startForegroundService() {
+        val serviceIntent = Intent(context, WebSocketForegroundService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent)
+        } else {
+            context.startService(serviceIntent)
+        }
+    }
+
+    // 添加停止前台服务的方法
+    private fun stopForegroundService() {
+        val serviceIntent = Intent(context, WebSocketForegroundService::class.java)
+        context.stopService(serviceIntent)
+    }
     private val pingCheckRunnable = object : Runnable {
         override fun run() {
             checkConnection()
@@ -30,6 +53,7 @@ class MyWebSocketClient(private val context: Context) {
     }
 
     fun connect(url: String) {
+        startForegroundService() // 启动前台服务
         val request = Request.Builder()
             .url(url)
             .build()
@@ -43,9 +67,11 @@ class MyWebSocketClient(private val context: Context) {
         webSocket?.send(message)
     }
 
+    // 在 close 方法中停止前台服务
     fun close() {
         webSocket?.close(1000, "Goodbye!")
-        handler.removeCallbacks(pingCheckRunnable) // 停止定时检查
+        handler.removeCallbacks(pingCheckRunnable)
+        stopForegroundService() // 停止前台服务
     }
 
     private inner class EchoWebSocketListener : WebSocketListener() {
@@ -56,13 +82,14 @@ class MyWebSocketClient(private val context: Context) {
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
-            Log.d("WebSocket", "Received: $text")
+            Log.d("WebSocketmsg", "Received: $text[${getCurrentTimestamp()}]")
             //(context as MainActivity).log("Received WebSocket message: $text")
 
             // 处理 "ping" 消息
             if (text == "ping") {
                 webSocket.send("pong")
                 lastPingTime = System.currentTimeMillis() // 更新最后一次收到 "ping" 的时间
+                Log.d("PONG", "PONG at  [${getCurrentTimestamp()}] ")
                 return
             }
 
@@ -151,5 +178,48 @@ class MyWebSocketClient(private val context: Context) {
     private fun getCurrentTimestamp(): String {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         return dateFormat.format(Date())
+    }
+}
+
+
+
+
+class WebSocketForegroundService : Service() {
+
+    private val CHANNEL_ID = "WebSocketForegroundServiceChannel"
+
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val notification = createNotification()
+        startForeground(1, notification)
+        return START_STICKY
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val serviceChannel = NotificationChannel(
+                CHANNEL_ID,
+                "WebSocket Foreground Service Channel",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(serviceChannel)
+        }
+    }
+
+    private fun createNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("WebSocket Service")
+            .setContentText("WebSocket connection is active")
+            .setSmallIcon(R.drawable.ic_notification) // 通知图标
+            .build()
     }
 }

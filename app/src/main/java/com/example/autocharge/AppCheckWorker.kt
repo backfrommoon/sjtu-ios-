@@ -31,7 +31,7 @@ class AppCheckWorker(context: Context, workerParams: WorkerParameters) : Worker(
         } else {
             Log.d("AppCheckWorker", "App is already running[${getCurrentTimestamp()}]")
             val intent = Intent("com.example.autocharge.START_WEBSOCKET")
-            applicationContext.sendBroadcast(intent)
+            //applicationContext.sendBroadcast(intent)
         }
 
         return Result.success()
